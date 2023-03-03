@@ -8,7 +8,7 @@ metadata:
   name: currency-exchange
   namespace: default
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: currency-exchange
@@ -23,17 +23,17 @@ spec:
         app: currency-exchange
     spec:
       containers:
-      - image: kalidratorma/mmv2-currency-exchange-service:0.0.14-SNAPSHOT
-        imagePullPolicy: IfNotPresent
-        name: mmv2-currency-exchange-service
-        readinessProbe:
-          httpGet:
-            port: 8000
-            path: /actuator/health/readiness
-        livenessProbe:
-          httpGet:
-            port: 8000
-            path: /actuator/health/liveness
+        - image: kalidratorma/mmv2-currency-exchange-service:0.0.14-SNAPSHOT
+          imagePullPolicy: IfNotPresent
+          name: mmv2-currency-exchange-service
+          readinessProbe:
+            httpGet:
+              port: 8000
+              path: /actuator/health/readiness
+          livenessProbe:
+            httpGet:
+              port: 8000
+              path: /actuator/health/liveness
       dnsPolicy: ClusterFirst
       restartPolicy: Always
 ---
@@ -55,3 +55,23 @@ spec:
     app: currency-exchange
   sessionAffinity: None
   type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: currency-exchange
+  namespace: default
+spec:
+  maxReplicas: 3
+  metrics:
+    - resource:
+        name: cpu
+        target:
+          averageUtilization: 1
+          type: Utilization
+      type: Resource
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: currency-exchange
