@@ -26,6 +26,14 @@ spec:
       - image: kalidratorma/mmv2-currency-exchange-service:0.0.14-SNAPSHOT
         imagePullPolicy: IfNotPresent
         name: mmv2-currency-exchange-service
+        readinessProbe:
+          httpGet:
+            port: 8000
+            path: /actuator/health/readiness
+        livenessProbe:
+          httpGet:
+            port: 8000
+            path: /actuator/health/liveness
       dnsPolicy: ClusterFirst
       restartPolicy: Always
 ---
